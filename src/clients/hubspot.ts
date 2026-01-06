@@ -64,7 +64,7 @@ export class HubSpotClient {
             logger.info(`Created job ${properties.tracker_job_id} in HubSpot with ID: ${createResponse.id}`);
             return createResponse.id;
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
           logger.error(`Error upserting job ${properties.tracker_job_id}`, error);
           throw error;
         }
@@ -125,7 +125,7 @@ export class HubSpotClient {
             logger.info(`Created placement ${properties.tracker_placement_id} in HubSpot with ID: ${createResponse.id}`);
             return createResponse.id;
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
           logger.error(`Error upserting placement ${properties.tracker_placement_id}`, error);
           throw error;
         }
@@ -159,10 +159,15 @@ export class HubSpotClient {
           });
           
           logger.info(`Created association from ${fromObjectType}:${fromObjectId} to ${toObjectType}:${toObjectId}`);
-        } catch (error: any) {
+        } catch (error: unknown) {
           // Association might already exist, which is fine
-          if (error.response?.status === 409) {
-            logger.debug(`Association already exists, skipping`);
+          if (error && typeof error === 'object' && 'response' in error) {
+            const axiosError = error as { response?: { status?: number } };
+            if (axiosError.response?.status === 409) {
+              logger.debug(`Association already exists, skipping`);
+            } else {
+              throw error;
+            }
           } else {
             throw error;
           }

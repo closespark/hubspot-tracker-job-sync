@@ -6,7 +6,7 @@ export async function retryWithBackoff<T>(
   delayMs: number,
   operationName: string = 'operation'
 ): Promise<T> {
-  let lastError: Error;
+  let lastError: Error | undefined;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
@@ -26,7 +26,11 @@ export async function retryWithBackoff<T>(
     }
   }
 
-  throw lastError!;
+  if (!lastError) {
+    throw new Error(`Operation ${operationName} failed without error`);
+  }
+
+  throw lastError;
 }
 
 function sleep(ms: number): Promise<void> {

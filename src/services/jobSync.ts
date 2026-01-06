@@ -1,6 +1,6 @@
 import { trackerClient } from '../clients/tracker';
 import { hubspotClient } from '../clients/hubspot';
-import { TrackerEventType, HubSpotJobProperties } from '../types';
+import { TrackerEventType, HubSpotJobProperties, TrackerOpportunity } from '../types';
 import { ASSOCIATION_TYPES } from '../config/associations';
 import { logger } from '../utils/logger';
 
@@ -35,7 +35,7 @@ export class JobSyncService {
     }
   }
 
-  private async createAssociations(jobId: string, opportunity: any): Promise<void> {
+  private async createAssociations(jobId: string, opportunity: TrackerOpportunity): Promise<void> {
     const associationPromises: Promise<void>[] = [];
 
     // Associate with Deal if dealId exists
