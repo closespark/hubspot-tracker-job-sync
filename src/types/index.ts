@@ -121,7 +121,7 @@ export interface HubSpotPlacementProperties {
   agreement_signed_date?: string;
   days_guaranteed?: string;
   assignment_value?: string;
-  placement_fee_percent?: string;
+  placement_fee?: string;
   actual_margin?: string;
   actual_margin_percent?: string;
   bill_rate?: string;

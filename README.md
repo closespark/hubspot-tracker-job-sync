@@ -293,7 +293,7 @@ Before using this service, you need to create custom objects in HubSpot:
 - `candidate_name` (Single-line text)
 
 **Optional Financial/Date Properties:**
-- `assignment_value`, `placement_fee_percent`, `actual_margin`, `bill_rate`, `pay_rate`
+- `assignment_value`, `placement_fee`, `actual_margin`, `bill_rate`, `pay_rate`
 - `date_assigned`, `placement_start_date`, `end_date`, `conversion_start_date`
 - `recruiter`, `coordinator`, `engagement_director` (text fields, NOT user references)
 
