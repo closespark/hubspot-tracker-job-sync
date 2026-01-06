@@ -262,6 +262,12 @@ export class PlacementSyncService {
   /**
    * Sync candidate contact (ONLY when eligible)
    * HARD RULE: Can only be called for "Placed Perm", "On Assignment", "Converted To Perm"
+   * 
+   * HARD GUARDRAIL:
+   * Do NOT sync candidates before placement.
+   * Do NOT set Contact Type.
+   * Do NOT use lifecycle stage labels.
+   * TrackerRMS is the sole SOR for candidates.
    */
   private async syncCandidateContact(
     placement: TrackerPlacement,
