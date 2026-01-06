@@ -1,7 +1,7 @@
 import { Client } from '@hubspot/api-client';
 import { FilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/objects/models/Filter';
 import { config } from '../config/index.js';
-import { HubSpotJobProperties, HubSpotDeal, HubSpotCompany } from '../types/index.js';
+import { HubSpotJobProperties, HubSpotDeal, HubSpotCompany, HubSpotPlacementProperties, HubSpotContactProperties } from '../types/index.js';
 import { logger } from '../utils/logger.js';
 import { retryWithBackoff } from '../utils/retry.js';
 
@@ -267,6 +267,352 @@ export class HubSpotClient {
       config.retry.maxRetries,
       config.retry.delayMs,
       `HubSpot.associateJobToCompany(${jobId}, ${companyId})`
+    );
+  }
+
+  /**
+   * Upsert a Placement custom object in HubSpot
+   * Uses placement_id_tracker as the unique identifier
+   */
+  async upsertPlacement(properties: HubSpotPlacementProperties): Promise<string> {
+    return retryWithBackoff(
+      async () => {
+        logger.debug(`Upserting placement with placement_id_tracker: ${properties.placement_id_tracker}`);
+
+        try {
+          // Try to find existing placement by placement_id_tracker
+          const searchResponse = await this.client.crm.objects.searchApi.doSearch(
+            config.hubspot.placementObjectType,
+            {
+              filterGroups: [
+                {
+                  filters: [
+                    {
+                      propertyName: config.hubspot.placementIdProperty,
+                      operator: FilterOperatorEnum.Eq,
+                      value: properties.placement_id_tracker,
+                    },
+                  ],
+                },
+              ],
+              limit: 1,
+              after: '',
+              sorts: [],
+              properties: [],
+            }
+          );
+
+          if (searchResponse.results && searchResponse.results.length > 0) {
+            // Update existing placement
+            const existingPlacementId = searchResponse.results[0].id;
+            logger.debug(`Updating existing placement with HubSpot ID: ${existingPlacementId}`);
+
+            await this.client.crm.objects.basicApi.update(
+              config.hubspot.placementObjectType,
+              existingPlacementId,
+              { properties }
+            );
+
+            logger.info(`Updated placement ${properties.placement_id_tracker} in HubSpot`);
+            return existingPlacementId;
+          } else {
+            // Create new placement
+            logger.debug(`Creating new placement for placement_id_tracker: ${properties.placement_id_tracker}`);
+
+            const createResponse = await this.client.crm.objects.basicApi.create(
+              config.hubspot.placementObjectType,
+              { properties, associations: [] }
+            );
+
+            logger.info(
+              `Created placement ${properties.placement_id_tracker} in HubSpot with ID: ${createResponse.id}`
+            );
+            return createResponse.id;
+          }
+        } catch (error: unknown) {
+          logger.error(`Error upserting placement ${properties.placement_id_tracker}`, error);
+          throw error;
+        }
+      },
+      config.retry.maxRetries,
+      config.retry.delayMs,
+      `HubSpot.upsertPlacement(${properties.placement_id_tracker})`
+    );
+  }
+
+  /**
+   * Upsert a Contact (for placed candidates)
+   * Uses candidate_id_tracker or email as the unique identifier
+   */
+  async upsertContact(properties: HubSpotContactProperties): Promise<string> {
+    return retryWithBackoff(
+      async () => {
+        logger.debug(`Upserting contact with candidate_id_tracker: ${properties.candidate_id_tracker}`);
+
+        try {
+          // Try to find existing contact by candidate_id_tracker
+          const searchResponse = await this.client.crm.contacts.searchApi.doSearch({
+            filterGroups: [
+              {
+                filters: [
+                  {
+                    propertyName: 'candidate_id_tracker',
+                    operator: FilterOperatorEnum.Eq,
+                    value: properties.candidate_id_tracker,
+                  },
+                ],
+              },
+            ],
+            limit: 1,
+            after: '',
+            sorts: [],
+            properties: [],
+          });
+
+          if (searchResponse.results && searchResponse.results.length > 0) {
+            // Update existing contact
+            const existingContactId = searchResponse.results[0].id;
+            logger.debug(`Updating existing contact with HubSpot ID: ${existingContactId}`);
+
+            await this.client.crm.contacts.basicApi.update(existingContactId, { properties });
+
+            logger.info(`Updated contact ${properties.candidate_id_tracker} in HubSpot`);
+            return existingContactId;
+          } else {
+            // Create new contact
+            logger.debug(`Creating new contact for candidate_id_tracker: ${properties.candidate_id_tracker}`);
+
+            const createResponse = await this.client.crm.contacts.basicApi.create({
+              properties,
+              associations: [],
+            });
+
+            logger.info(
+              `Created contact ${properties.candidate_id_tracker} in HubSpot with ID: ${createResponse.id}`
+            );
+            return createResponse.id;
+          }
+        } catch (error: unknown) {
+          logger.error(`Error upserting contact ${properties.candidate_id_tracker}`, error);
+          throw error;
+        }
+      },
+      config.retry.maxRetries,
+      config.retry.delayMs,
+      `HubSpot.upsertContact(${properties.candidate_id_tracker})`
+    );
+  }
+
+  /**
+   * Associate Placement with Job
+   */
+  async associatePlacementToJob(placementId: string, jobId: string): Promise<void> {
+    return retryWithBackoff(
+      async () => {
+        logger.debug(`Associating placement ${placementId} with job ${jobId}`);
+
+        try {
+          await this.client.crm.associations.batchApi.create(
+            config.hubspot.placementObjectType,
+            config.hubspot.jobObjectType,
+            {
+              inputs: [
+                {
+                  _from: { id: placementId },
+                  to: { id: jobId },
+                  type: 'custom_to_custom',
+                },
+              ],
+            }
+          );
+
+          logger.info(`Associated placement ${placementId} with job ${jobId}`);
+        } catch (error: unknown) {
+          if (error && typeof error === 'object' && 'response' in error) {
+            const axiosError = error as { response?: { status?: number } };
+            if (axiosError.response?.status === 409) {
+              logger.debug(`Association already exists, skipping`);
+              return;
+            }
+          }
+          throw error;
+        }
+      },
+      config.retry.maxRetries,
+      config.retry.delayMs,
+      `HubSpot.associatePlacementToJob(${placementId}, ${jobId})`
+    );
+  }
+
+  /**
+   * Associate Placement with Deal
+   */
+  async associatePlacementToDeal(placementId: string, dealId: string): Promise<void> {
+    return retryWithBackoff(
+      async () => {
+        logger.debug(`Associating placement ${placementId} with deal ${dealId}`);
+
+        try {
+          await this.client.crm.associations.batchApi.create(
+            config.hubspot.placementObjectType,
+            'deals',
+            {
+              inputs: [
+                {
+                  _from: { id: placementId },
+                  to: { id: dealId },
+                  type: 'custom_to_deal',
+                },
+              ],
+            }
+          );
+
+          logger.info(`Associated placement ${placementId} with deal ${dealId}`);
+        } catch (error: unknown) {
+          if (error && typeof error === 'object' && 'response' in error) {
+            const axiosError = error as { response?: { status?: number } };
+            if (axiosError.response?.status === 409) {
+              logger.debug(`Association already exists, skipping`);
+              return;
+            }
+          }
+          throw error;
+        }
+      },
+      config.retry.maxRetries,
+      config.retry.delayMs,
+      `HubSpot.associatePlacementToDeal(${placementId}, ${dealId})`
+    );
+  }
+
+  /**
+   * Associate Placement with Company
+   */
+  async associatePlacementToCompany(placementId: string, companyId: string): Promise<void> {
+    return retryWithBackoff(
+      async () => {
+        logger.debug(`Associating placement ${placementId} with company ${companyId}`);
+
+        try {
+          await this.client.crm.associations.batchApi.create(
+            config.hubspot.placementObjectType,
+            'companies',
+            {
+              inputs: [
+                {
+                  _from: { id: placementId },
+                  to: { id: companyId },
+                  type: 'custom_to_company',
+                },
+              ],
+            }
+          );
+
+          logger.info(`Associated placement ${placementId} with company ${companyId}`);
+        } catch (error: unknown) {
+          if (error && typeof error === 'object' && 'response' in error) {
+            const axiosError = error as { response?: { status?: number } };
+            if (axiosError.response?.status === 409) {
+              logger.debug(`Association already exists, skipping`);
+              return;
+            }
+          }
+          throw error;
+        }
+      },
+      config.retry.maxRetries,
+      config.retry.delayMs,
+      `HubSpot.associatePlacementToCompany(${placementId}, ${companyId})`
+    );
+  }
+
+  /**
+   * Associate Placement with Contact (placed candidate)
+   */
+  async associatePlacementToContact(placementId: string, contactId: string): Promise<void> {
+    return retryWithBackoff(
+      async () => {
+        logger.debug(`Associating placement ${placementId} with contact ${contactId}`);
+
+        try {
+          await this.client.crm.associations.batchApi.create(
+            config.hubspot.placementObjectType,
+            'contacts',
+            {
+              inputs: [
+                {
+                  _from: { id: placementId },
+                  to: { id: contactId },
+                  type: 'custom_to_contact',
+                },
+              ],
+            }
+          );
+
+          logger.info(`Associated placement ${placementId} with contact ${contactId}`);
+        } catch (error: unknown) {
+          if (error && typeof error === 'object' && 'response' in error) {
+            const axiosError = error as { response?: { status?: number } };
+            if (axiosError.response?.status === 409) {
+              logger.debug(`Association already exists, skipping`);
+              return;
+            }
+          }
+          throw error;
+        }
+      },
+      config.retry.maxRetries,
+      config.retry.delayMs,
+      `HubSpot.associatePlacementToContact(${placementId}, ${contactId})`
+    );
+  }
+
+  /**
+   * Get Job ID by tracker_job_id
+   */
+  async getJobIdByTrackerJobId(trackerJobId: string): Promise<string | null> {
+    return retryWithBackoff(
+      async () => {
+        logger.debug(`Finding HubSpot Job ID for tracker_job_id: ${trackerJobId}`);
+
+        try {
+          const searchResponse = await this.client.crm.objects.searchApi.doSearch(
+            config.hubspot.jobObjectType,
+            {
+              filterGroups: [
+                {
+                  filters: [
+                    {
+                      propertyName: config.hubspot.jobIdProperty,
+                      operator: FilterOperatorEnum.Eq,
+                      value: trackerJobId,
+                    },
+                  ],
+                },
+              ],
+              limit: 1,
+              after: '',
+              sorts: [],
+              properties: [],
+            }
+          );
+
+          if (searchResponse.results && searchResponse.results.length > 0) {
+            const jobId = searchResponse.results[0].id;
+            logger.debug(`Found HubSpot Job ID: ${jobId} for tracker_job_id: ${trackerJobId}`);
+            return jobId;
+          }
+
+          logger.debug(`No HubSpot Job found for tracker_job_id: ${trackerJobId}`);
+          return null;
+        } catch (error: unknown) {
+          logger.error(`Error finding job by tracker_job_id: ${trackerJobId}`, error);
+          throw error;
+        }
+      },
+      config.retry.maxRetries,
+      config.retry.delayMs,
+      `HubSpot.getJobIdByTrackerJobId(${trackerJobId})`
     );
   }
 }

@@ -12,9 +12,15 @@ export interface Config {
     engagementDirectorProperty: string;
     jobValueProperty: string;
     jobOwnerProperty: string;
+    placementObjectType: string;
+    placementIdProperty: string;
     dealNameProperty: string;
     dealServiceLineProperty: string;
     dealServiceLineRetainedValue: string;
+    dealStageProperty: string;
+    dealStageClosedWonValue: string;
+    dealJobSyncStatusProperty: string;
+    dealJobSyncStatusAwaitingValue: string;
     companyNameProperty: string;
     dealCreatedDateProperty: string;
   };
@@ -50,9 +56,15 @@ export const config: Config = {
     engagementDirectorProperty: process.env.HUBSPOT_ENGAGEMENT_DIRECTOR_PROPERTY || 'engagement_director',
     jobValueProperty: process.env.HUBSPOT_JOB_VALUE_PROPERTY || 'job_value',
     jobOwnerProperty: process.env.HUBSPOT_JOB_OWNER_PROPERTY || 'job_owner',
+    placementObjectType: process.env.HUBSPOT_PLACEMENT_OBJECT_TYPE || 'tracker_placements',
+    placementIdProperty: process.env.HUBSPOT_PLACEMENT_ID_PROPERTY || 'placement_id_tracker',
     dealNameProperty: process.env.HUBSPOT_DEAL_NAME_PROPERTY || 'dealname',
     dealServiceLineProperty: process.env.HUBSPOT_DEAL_SERVICE_LINE_PROPERTY || 'service_line',
     dealServiceLineRetainedValue: process.env.HUBSPOT_DEAL_SERVICE_LINE_RETAINED_VALUE || 'Retained Search',
+    dealStageProperty: process.env.HUBSPOT_DEAL_STAGE_PROPERTY || 'dealstage',
+    dealStageClosedWonValue: process.env.HUBSPOT_DEAL_STAGE_CLOSED_WON_VALUE || 'closedwon',
+    dealJobSyncStatusProperty: process.env.HUBSPOT_DEAL_JOB_SYNC_STATUS_PROPERTY || 'job_sync_status',
+    dealJobSyncStatusAwaitingValue: process.env.HUBSPOT_DEAL_JOB_SYNC_STATUS_AWAITING_VALUE || 'Awaiting Job Creation',
     companyNameProperty: process.env.HUBSPOT_COMPANY_NAME_PROPERTY || 'name',
     dealCreatedDateProperty: process.env.HUBSPOT_DEAL_CREATED_DATE_PROPERTY || 'createdate',
   },

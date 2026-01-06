@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { config } from '../config/index.js';
-import { TrackerJob, TrackerPlacement } from '../types/index.js';
+import { TrackerJob, TrackerPlacement, TrackerCandidate } from '../types/index.js';
 import { logger } from '../utils/logger.js';
 import { retryWithBackoff } from '../utils/retry.js';
 
@@ -88,6 +88,23 @@ export class TrackerClient {
       config.retry.maxRetries,
       config.retry.delayMs,
       `Tracker.getPlacement(${placementId})`
+    );
+  }
+
+  /**
+   * Get a single candidate by ID
+   */
+  async getCandidate(candidateId: string): Promise<TrackerCandidate> {
+    return retryWithBackoff(
+      async () => {
+        logger.debug(`Fetching candidate ${candidateId} from Tracker`);
+        const response = await this.client.get<TrackerCandidate>(`/candidates/${candidateId}`);
+        logger.debug(`Successfully fetched candidate ${candidateId}`);
+        return response.data;
+      },
+      config.retry.maxRetries,
+      config.retry.delayMs,
+      `Tracker.getCandidate(${candidateId})`
     );
   }
 }

@@ -118,18 +118,8 @@ export class JobSyncService {
         return;
       }
 
-      // Get company names for all deals (for disambiguation)
-      const companiesMap = new Map<string, string>();
-      for (const deal of deals) {
-        const companies = await hubspotClient.getDealCompanies(deal.id);
-        if (companies.length > 0) {
-          // Use the first company's name
-          companiesMap.set(deal.id, companies[0].properties.name);
-        }
-      }
-
-      // Run the canonical matching algorithm
-      const matchResult = await matchJobToDeal(job, deals, companiesMap);
+      // Run the canonical matching algorithm (exact match only)
+      const matchResult = await matchJobToDeal(job, deals);
 
       if (!matchResult.matched) {
         if (matchResult.confidence === 'ambiguous') {

@@ -13,12 +13,42 @@ export interface TrackerJob {
   [key: string]: any;
 }
 
+export interface TrackerCandidate {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  fullName: string;
+  email?: string;
+  phone?: string;
+  [key: string]: any;
+}
+
 export interface TrackerPlacement {
   id: string;
   jobId: string;
-  candidateName?: string;
-  status: string;
-  startDate?: string;
+  job?: TrackerJob;
+  candidateId: string;
+  candidate?: TrackerCandidate;
+  status: string; // Must be one of the 9 allowed values
+  dateAssigned?: string;
+  dateConfirmed?: string;
+  placementStartDate?: string;
+  endDate?: string;
+  scheduledEndDate?: string;
+  dateClosed?: string;
+  conversionStartDate?: string;
+  agreementSignedDate?: string;
+  daysGuaranteed?: number;
+  assignmentValue?: number;
+  placementFeePercent?: number;
+  actualMargin?: number;
+  actualMarginPercent?: number;
+  billRate?: number;
+  payRate?: number;
+  placementCurrency?: string;
+  recruiter?: string;
+  coordinator?: string;
+  engagementDirector?: string;
   createdDate: string;
   updatedDate: string;
   [key: string]: any;
@@ -71,6 +101,49 @@ export interface MatchResult {
   }>;
 }
 
+// HubSpot Placement Properties
+export interface HubSpotPlacementProperties {
+  placement_id_tracker: string;
+  placement_name: string;
+  job_id_tracker: string;
+  job_name: string;
+  candidate_id_tracker: string;
+  candidate_name: string;
+  placement_status: string;
+  placement_outcome_type: string;
+  date_assigned?: string;
+  date_confirmed?: string;
+  placement_start_date?: string;
+  end_date?: string;
+  scheduled_end_date?: string;
+  date_closed?: string;
+  conversion_start_date?: string;
+  agreement_signed_date?: string;
+  days_guaranteed?: string;
+  assignment_value?: string;
+  placement_fee_percent?: string;
+  actual_margin?: string;
+  actual_margin_percent?: string;
+  bill_rate?: string;
+  pay_rate?: string;
+  placement_currency?: string;
+  recruiter?: string;
+  coordinator?: string;
+  engagement_director?: string;
+  [key: string]: any;
+}
+
+// HubSpot Contact Properties (for placed candidates)
+export interface HubSpotContactProperties {
+  candidate_id_tracker: string;
+  firstname?: string;
+  lastname?: string;
+  email?: string;
+  phone?: string;
+  lifecyclestage: string; // Always "Placed Candidate"
+  [key: string]: any;
+}
+
 // Sync Result
 export interface SyncResult {
   jobsProcessed: number;
@@ -79,3 +152,29 @@ export interface SyncResult {
   jobsMatched: number;
   errors: string[];
 }
+
+// Placement Sync Result
+export interface PlacementSyncResult {
+  placementsProcessed: number;
+  placementsCreated: number;
+  placementsUpdated: number;
+  placementsSkipped: number; // Not eligible (status not in allowed list)
+  candidatesCreated: number;
+  candidatesUpdated: number;
+  errors: string[];
+}
+
+// Placement Status
+export type PlacementStatus =
+  | 'Placed Perm'
+  | 'On Assignment'
+  | 'Converted To Perm'
+  | 'Withdrawn'
+  | 'Declined'
+  | 'Ended'
+  | 'Cancelled'
+  | 'Backed Out'
+  | 'Ended Early';
+
+// Placement Outcome Type (computed from status)
+export type PlacementOutcomeType = 'Placed' | 'Converted' | 'Ended' | 'Cancelled';

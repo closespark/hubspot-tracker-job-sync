@@ -1,4 +1,5 @@
 import { jobSyncService } from './jobSync.js';
+import { placementSyncService } from './placementSync.service.js';
 import { logger } from '../utils/logger.js';
 import { config } from '../config/index.js';
 
@@ -64,21 +65,46 @@ export class PollingScheduler {
     try {
       logger.info('=== Starting scheduled sync cycle ===');
 
-      const result = await jobSyncService.syncAllJobs();
+      // Sync Jobs first
+      const jobResult = await jobSyncService.syncAllJobs();
+
+      logger.info('Jobs sync completed', {
+        jobsProcessed: jobResult.jobsProcessed,
+        jobsCreated: jobResult.jobsCreated,
+        jobsUpdated: jobResult.jobsUpdated,
+        jobsMatched: jobResult.jobsMatched,
+        errors: jobResult.errors.length,
+      });
+
+      // Then sync Placements and Candidates
+      const placementResult = await placementSyncService.syncAllPlacements();
+
+      logger.info('Placements sync completed', {
+        placementsProcessed: placementResult.placementsProcessed,
+        placementsCreated: placementResult.placementsCreated,
+        placementsUpdated: placementResult.placementsUpdated,
+        placementsSkipped: placementResult.placementsSkipped,
+        candidatesCreated: placementResult.candidatesCreated,
+        candidatesUpdated: placementResult.candidatesUpdated,
+        errors: placementResult.errors.length,
+      });
 
       const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
       logger.info('=== Sync cycle completed ===', {
         duration: `${duration}s`,
-        jobsProcessed: result.jobsProcessed,
-        jobsCreated: result.jobsCreated,
-        jobsUpdated: result.jobsUpdated,
-        jobsMatched: result.jobsMatched,
-        errors: result.errors.length,
+        totalErrors: jobResult.errors.length + placementResult.errors.length,
       });
 
-      if (result.errors.length > 0) {
-        logger.warn(`Sync completed with ${result.errors.length} errors`, result.errors);
+      if (jobResult.errors.length > 0) {
+        logger.warn(`Job sync completed with ${jobResult.errors.length} errors`, jobResult.errors);
+      }
+
+      if (placementResult.errors.length > 0) {
+        logger.warn(
+          `Placement sync completed with ${placementResult.errors.length} errors`,
+          placementResult.errors
+        );
       }
     } catch (error) {
       logger.error('Fatal error during sync cycle', error);
