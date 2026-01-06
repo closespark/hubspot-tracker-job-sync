@@ -13,7 +13,6 @@ Polling-based integration that syncs TrackerRMS Jobs, Placements, and Placed Can
 - 📊 **Associations**: Automatically associates Jobs/Placements to Deals, Companies, and Contacts
 - 🚀 **Production Ready**: Configured for easy deployment to Render with Docker support
 - 📝 **TypeScript**: Fully typed with ES modules for better developer experience
-- 🛡️ **SOW Compliant**: TrackerRMS is sole System of Record for Jobs/Placements/Candidates
 
 ## System of Record Boundaries
 
