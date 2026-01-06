@@ -113,8 +113,8 @@ PORT=3001
 ### HubSpot custom objects not found
 
 Make sure you've created the custom objects in HubSpot:
-- `tracker_jobs`
-- `tracker_placements`
+- `jobs`
+- `placements`
 
 See [DEPLOYMENT.md](DEPLOYMENT.md#hubspot-custom-object-setup) for setup instructions.
 
