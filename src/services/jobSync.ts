@@ -67,7 +67,7 @@ export class JobSyncService {
     try {
       // Map Tracker job to HubSpot Job properties
       const jobProperties: HubSpotJobProperties = {
-        tracker_job_id: job.id,
+        job_id_tracker: job.id,
         job_name: job.name,
         job_status: job.status,
         job_created_date_tracker: job.createdDate,
@@ -81,10 +81,10 @@ export class JobSyncService {
         jobProperties.engagement_director = job.engagementDirector;
       }
       if (job.jobValue !== undefined) {
-        jobProperties.job_value = String(job.jobValue);
+        jobProperties.estimated_fee__job_value = String(job.jobValue);
       }
       if (job.jobOwner) {
-        jobProperties.job_owner = job.jobOwner;
+        jobProperties.job_owner_tracker = job.jobOwner;
       }
 
       // Upsert Job in HubSpot

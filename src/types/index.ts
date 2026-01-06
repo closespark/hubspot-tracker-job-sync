@@ -56,14 +56,14 @@ export interface TrackerPlacement {
 
 // HubSpot Models
 export interface HubSpotJobProperties {
-  tracker_job_id: string;
+  job_id_tracker: string;
   job_name: string;
   job_status: string;
   job_created_date_tracker: string;
   job_type?: string;
   engagement_director?: string;
-  job_value?: string;
-  job_owner?: string;
+  estimated_fee__job_value?: string;
+  job_owner_tracker?: string;
   [key: string]: any;
 }
 
