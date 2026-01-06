@@ -34,7 +34,7 @@ Before deploying, ensure you have:
 **Object Label (plural):** Jobs
 
 **Properties:**
-- `tracker_job_id` (Single-line text, unique identifier)
+- `job_id_tracker` (Single-line text, unique identifier)
 - `job_title` (Single-line text)
 - `job_description` (Multi-line text)
 - `job_status` (Single-line text)

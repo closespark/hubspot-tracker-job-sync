@@ -14,15 +14,15 @@ export class HubSpotClient {
 
   /**
    * Upsert a Job custom object in HubSpot
-   * Uses tracker_job_id as the unique identifier
+   * Uses job_id_tracker as the unique identifier
    */
   async upsertJob(properties: HubSpotJobProperties): Promise<string> {
     return retryWithBackoff(
       async () => {
-        logger.debug(`Upserting job with tracker_job_id: ${properties.tracker_job_id}`);
+        logger.debug(`Upserting job with job_id_tracker: ${properties.job_id_tracker}`);
 
         try {
-          // Try to find existing job by tracker_job_id
+          // Try to find existing job by job_id_tracker
           const searchResponse = await this.client.crm.objects.searchApi.doSearch(
             config.hubspot.jobObjectType,
             {
@@ -32,7 +32,7 @@ export class HubSpotClient {
                     {
                       propertyName: config.hubspot.jobIdProperty,
                       operator: FilterOperatorEnum.Eq,
-                      value: properties.tracker_job_id,
+                      value: properties.job_id_tracker,
                     },
                   ],
                 },
@@ -55,11 +55,11 @@ export class HubSpotClient {
               { properties }
             );
 
-            logger.info(`Updated job ${properties.tracker_job_id} in HubSpot`);
+            logger.info(`Updated job ${properties.job_id_tracker} in HubSpot`);
             return existingJobId;
           } else {
             // Create new job
-            logger.debug(`Creating new job for tracker_job_id: ${properties.tracker_job_id}`);
+            logger.debug(`Creating new job for job_id_tracker: ${properties.job_id_tracker}`);
 
             const createResponse = await this.client.crm.objects.basicApi.create(
               config.hubspot.jobObjectType,
@@ -67,18 +67,18 @@ export class HubSpotClient {
             );
 
             logger.info(
-              `Created job ${properties.tracker_job_id} in HubSpot with ID: ${createResponse.id}`
+              `Created job ${properties.job_id_tracker} in HubSpot with ID: ${createResponse.id}`
             );
             return createResponse.id;
           }
         } catch (error: unknown) {
-          logger.error(`Error upserting job ${properties.tracker_job_id}`, error);
+          logger.error(`Error upserting job ${properties.job_id_tracker}`, error);
           throw error;
         }
       },
       config.retry.maxRetries,
       config.retry.delayMs,
-      `HubSpot.upsertJob(${properties.tracker_job_id})`
+      `HubSpot.upsertJob(${properties.job_id_tracker})`
     );
   }
 
@@ -581,12 +581,12 @@ export class HubSpotClient {
   }
 
   /**
-   * Get Job ID by tracker_job_id
+   * Get Job ID by job_id_tracker
    */
   async getJobIdByTrackerJobId(trackerJobId: string): Promise<string | null> {
     return retryWithBackoff(
       async () => {
-        logger.debug(`Finding HubSpot Job ID for tracker_job_id: ${trackerJobId}`);
+        logger.debug(`Finding HubSpot Job ID for job_id_tracker: ${trackerJobId}`);
 
         try {
           const searchResponse = await this.client.crm.objects.searchApi.doSearch(
@@ -612,14 +612,14 @@ export class HubSpotClient {
 
           if (searchResponse.results && searchResponse.results.length > 0) {
             const jobId = searchResponse.results[0].id;
-            logger.debug(`Found HubSpot Job ID: ${jobId} for tracker_job_id: ${trackerJobId}`);
+            logger.debug(`Found HubSpot Job ID: ${jobId} for job_id_tracker: ${trackerJobId}`);
             return jobId;
           }
 
-          logger.debug(`No HubSpot Job found for tracker_job_id: ${trackerJobId}`);
+          logger.debug(`No HubSpot Job found for job_id_tracker: ${trackerJobId}`);
           return null;
         } catch (error: unknown) {
-          logger.error(`Error finding job by tracker_job_id: ${trackerJobId}`, error);
+          logger.error(`Error finding job by job_id_tracker: ${trackerJobId}`, error);
           throw error;
         }
       },

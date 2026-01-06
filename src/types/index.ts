@@ -56,14 +56,14 @@ export interface TrackerPlacement {
 
 // HubSpot Models
 export interface HubSpotJobProperties {
-  tracker_job_id: string;
+  job_id_tracker: string;
   job_name: string;
   job_status: string;
   job_created_date_tracker: string;
   job_type?: string;
   engagement_director?: string;
-  job_value?: string;
-  job_owner?: string;
+  estimated_fee__job_value?: string;
+  job_owner_tracker?: string;
   [key: string]: any;
 }
 
@@ -121,7 +121,7 @@ export interface HubSpotPlacementProperties {
   agreement_signed_date?: string;
   days_guaranteed?: string;
   assignment_value?: string;
-  placement_fee_percent?: string;
+  placement_fee?: string;
   actual_margin?: string;
   actual_margin_percent?: string;
   bill_rate?: string;

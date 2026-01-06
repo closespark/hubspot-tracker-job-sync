@@ -201,7 +201,7 @@ export class PlacementSyncService {
       agreement_signed_date: placement.agreementSignedDate || undefined,
       days_guaranteed: placement.daysGuaranteed?.toString() || undefined,
       assignment_value: placement.assignmentValue?.toString() || undefined,
-      placement_fee_percent: placement.placementFeePercent?.toString() || undefined,
+      placement_fee: placement.placementFeePercent?.toString() || undefined,
       actual_margin: placement.actualMargin?.toString() || undefined,
       actual_margin_percent: placement.actualMarginPercent?.toString() || undefined,
       bill_rate: placement.billRate?.toString() || undefined,

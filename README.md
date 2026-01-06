@@ -59,7 +59,7 @@ Polling-based integration that syncs TrackerRMS Jobs, Placements, and Placed Can
                            ↓
 ┌─────────────────────────────────────────────────────────────┐
 │  4. Upsert HubSpot Job Custom Objects                       │
-│     External ID: tracker_job_id                             │
+│     External ID: job_id_tracker                             │
 │     Associations: Job → Deal, Job → Company                 │
 └─────────────────────────────────────────────────────────────┘
                            ↓
@@ -141,7 +141,7 @@ HUBSPOT_ACCESS_TOKEN=your_hubspot_private_app_token_here
 
 # HubSpot Job Custom Object
 HUBSPOT_JOB_OBJECT_TYPE=jobs
-HUBSPOT_JOB_ID_PROPERTY=tracker_job_id
+HUBSPOT_JOB_ID_PROPERTY=job_id_tracker
 HUBSPOT_JOB_NAME_PROPERTY=job_name
 HUBSPOT_JOB_STATUS_PROPERTY=job_status
 
@@ -267,14 +267,14 @@ Before using this service, you need to create custom objects in HubSpot:
 ### Job Custom Object (`jobs`)
 
 **Required Properties:**
-- `tracker_job_id` (Single-line text, **unique identifier**)
+- `job_id_tracker` (Single-line text, **unique identifier**)
 - `job_name` (Single-line text) - Maps to Tracker job.name
 - `job_status` (Single-line text) - Maps to Tracker job.status
 - `job_created_date_tracker` (Date picker) - Read-only from Tracker
 - `job_type` (Single-line text, optional)
 - `engagement_director` (Single-line text, optional)
-- `job_value` (Number, optional)
-- `job_owner` (Single-line text, optional)
+- `estimated_fee__job_value` (Number, optional)
+- `job_owner_tracker` (Single-line text, optional)
 
 **Associations:**
 - Can be associated to: Deals, Companies
@@ -293,7 +293,7 @@ Before using this service, you need to create custom objects in HubSpot:
 - `candidate_name` (Single-line text)
 
 **Optional Financial/Date Properties:**
-- `assignment_value`, `placement_fee_percent`, `actual_margin`, `bill_rate`, `pay_rate`
+- `assignment_value`, `placement_fee`, `actual_margin`, `bill_rate`, `pay_rate`
 - `date_assigned`, `placement_start_date`, `end_date`, `conversion_start_date`
 - `recruiter`, `coordinator`, `engagement_director` (text fields, NOT user references)
 
@@ -494,7 +494,7 @@ After exhausting all retries, the error is logged and the sync continues with th
 ### Data Integrity
 
 - **Upsert pattern**: Jobs and Placements are never deleted, only created/updated
-- **External IDs**: `tracker_job_id` and `placement_id_tracker` ensure idempotent upserts
+- **External IDs**: `job_id_tracker` and `placement_id_tracker` ensure idempotent upserts
 - **Read-only**: TrackerRMS remains the sole System of Record
 - **No backfilling**: Integration does not create historical data in Tracker
 
