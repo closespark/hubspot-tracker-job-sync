@@ -1,7 +1,7 @@
 import { trackerClient } from '../clients/tracker';
 import { hubspotClient } from '../clients/hubspot';
-import { FilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/objects/models/Filter';
 import { TrackerEventType, HubSpotPlacementProperties } from '../types';
+import { ASSOCIATION_TYPES } from '../config/associations';
 import { logger } from '../utils/logger';
 
 export class PlacementSyncService {
@@ -40,40 +40,18 @@ export class PlacementSyncService {
   private async associateWithJob(placementId: string, opportunityId: string): Promise<void> {
     try {
       // First, we need to find the HubSpot Job ID from the Tracker opportunity ID
-      // This is a simplified version - in production, you might want to cache this mapping
       logger.debug(`Finding HubSpot job for tracker opportunity ${opportunityId}`);
       
-      const opportunity = await trackerClient.getOpportunity(opportunityId);
-      
-      // Search for the job in HubSpot using tracker_job_id
-      const searchResponse = await hubspotClient['client'].crm.objects.searchApi.doSearch('tracker_jobs', {
-        filterGroups: [
-          {
-            filters: [
-              {
-                propertyName: 'tracker_job_id',
-                operator: FilterOperatorEnum.Eq,
-                value: opportunity.id,
-              },
-            ],
-          },
-        ],
-        limit: 1,
-        after: '',
-        sorts: [],
-        properties: [],
-      });
+      const jobId = await hubspotClient.searchJobByTrackerId(opportunityId);
 
-      if (searchResponse.results && searchResponse.results.length > 0) {
-        const jobId = searchResponse.results[0].id;
-        
+      if (jobId) {
         logger.debug(`Associating placement ${placementId} with job ${jobId}`);
         await hubspotClient.createAssociation(
           'tracker_placements',
           placementId,
           'tracker_jobs',
           jobId,
-          1 // Association type ID for placement to job
+          ASSOCIATION_TYPES.CUSTOM_TO_CUSTOM
         );
       } else {
         logger.warn(`Could not find HubSpot job for tracker opportunity ${opportunityId}`);

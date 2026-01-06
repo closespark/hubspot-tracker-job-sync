@@ -1,6 +1,7 @@
 import { trackerClient } from '../clients/tracker';
 import { hubspotClient } from '../clients/hubspot';
 import { TrackerEventType, HubSpotJobProperties } from '../types';
+import { ASSOCIATION_TYPES } from '../config/associations';
 import { logger } from '../utils/logger';
 
 export class JobSyncService {
@@ -46,7 +47,7 @@ export class JobSyncService {
           jobId,
           'deals',
           opportunity.dealId,
-          1 // Association type ID for custom object to deal
+          ASSOCIATION_TYPES.CUSTOM_TO_DEAL
         ).catch((error) => {
           logger.warn(`Failed to associate job with deal ${opportunity.dealId}`, error);
         })
@@ -62,7 +63,7 @@ export class JobSyncService {
           jobId,
           'companies',
           opportunity.companyId,
-          1 // Association type ID for custom object to company
+          ASSOCIATION_TYPES.CUSTOM_TO_COMPANY
         ).catch((error) => {
           logger.warn(`Failed to associate job with company ${opportunity.companyId}`, error);
         })
@@ -78,7 +79,7 @@ export class JobSyncService {
           jobId,
           'tickets',
           opportunity.ticketId,
-          1 // Association type ID for custom object to ticket
+          ASSOCIATION_TYPES.CUSTOM_TO_TICKET
         ).catch((error) => {
           logger.warn(`Failed to associate job with ticket ${opportunity.ticketId}`, error);
         })

@@ -173,6 +173,41 @@ export class HubSpotClient {
       `HubSpot.createAssociation(${fromObjectType}:${fromObjectId} -> ${toObjectType}:${toObjectId})`
     );
   }
+
+  async searchJobByTrackerId(trackerId: string): Promise<string | null> {
+    return retryWithBackoff(
+      async () => {
+        logger.debug(`Searching for job with tracker_job_id: ${trackerId}`);
+
+        const searchResponse = await this.client.crm.objects.searchApi.doSearch(this.JOB_OBJECT_TYPE, {
+          filterGroups: [
+            {
+              filters: [
+                {
+                  propertyName: 'tracker_job_id',
+                  operator: FilterOperatorEnum.Eq,
+                  value: trackerId,
+                },
+              ],
+            },
+          ],
+          limit: 1,
+          after: '',
+          sorts: [],
+          properties: [],
+        });
+
+        if (searchResponse.results && searchResponse.results.length > 0) {
+          return searchResponse.results[0].id;
+        }
+
+        return null;
+      },
+      config.retry.maxRetries,
+      config.retry.delayMs,
+      `HubSpot.searchJobByTrackerId(${trackerId})`
+    );
+  }
 }
 
 export const hubspotClient = new HubSpotClient();
