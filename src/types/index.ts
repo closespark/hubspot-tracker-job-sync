@@ -1,9 +1,9 @@
 // Tracker Webhook Event Types
 export enum TrackerEventType {
-  OPPORTUNITY_CREATED = 'Opportunity.Created',
-  OPPORTUNITY_UPDATED = 'Opportunity.Updated',
-  OPPORTUNITY_RESOURCE_CREATED = 'OpportunityResource.Created',
-  OPPORTUNITY_RESOURCE_UPDATED = 'OpportunityResource.Updated',
+  JOB_CREATED = 'Job.Created',
+  JOB_UPDATED = 'Job.Updated',
+  PLACEMENT_CREATED = 'Placement.Created',
+  PLACEMENT_UPDATED = 'Placement.Updated',
 }
 
 // Webhook Payload
@@ -12,61 +12,76 @@ export interface WebhookPayload {
   eventId: string;
   timestamp: string;
   data: {
-    opportunityId?: string;
-    opportunityResourceId?: string;
+    jobId?: string;
+    placementId?: string;
     [key: string]: any;
   };
 }
 
 // Tracker API Models
-export interface TrackerOpportunity {
+export interface TrackerJob {
   id: string;
-  title: string;
-  description?: string;
+  name: string;
   status: string;
-  companyId?: string;
-  dealId?: string;
-  ticketId?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdDate: string;
+  updatedDate: string;
+  companyName?: string;
   [key: string]: any;
 }
 
-export interface TrackerOpportunityResource {
+export interface TrackerPlacement {
   id: string;
-  opportunityId: string;
-  resourceId: string;
+  jobId: string;
   candidateName?: string;
   status: string;
   startDate?: string;
   endDate?: string;
-  rate?: number;
-  createdAt: string;
-  updatedAt: string;
+  createdDate: string;
+  updatedDate: string;
   [key: string]: any;
 }
 
 // HubSpot Models
 export interface HubSpotJobProperties {
   tracker_job_id: string;
-  job_title: string;
-  job_description?: string;
+  job_name: string;
   job_status: string;
-  created_at: string;
-  updated_at: string;
+  job_created_date_tracker: string;
   [key: string]: any;
 }
 
-export interface HubSpotPlacementProperties {
-  tracker_placement_id: string;
-  placement_status: string;
-  candidate_name?: string;
-  start_date?: string;
-  end_date?: string;
-  rate?: number;
-  created_at: string;
-  updated_at: string;
-  [key: string]: any;
+export interface HubSpotDeal {
+  id: string;
+  properties: {
+    dealname: string;
+    service_line?: string;
+    createdate?: string;
+    [key: string]: any;
+  };
+  associations?: {
+    companies?: { id: string }[];
+  };
+}
+
+export interface HubSpotCompany {
+  id: string;
+  properties: {
+    name: string;
+    [key: string]: any;
+  };
+}
+
+// Job-Deal Matching Result
+export interface MatchResult {
+  matched: boolean;
+  dealId?: string;
+  confidence: 'exact' | 'high' | 'low' | 'ambiguous' | 'none';
+  reason?: string;
+  candidateDeals?: Array<{
+    id: string;
+    dealname: string;
+    score: number;
+  }>;
 }
 
 // Idempotency

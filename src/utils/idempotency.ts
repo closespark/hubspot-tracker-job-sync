@@ -1,4 +1,4 @@
-import { ProcessedEvent } from '../types';
+import { ProcessedEvent } from '../types/index.js';
 
 // In-memory store for idempotency tracking
 // In production, this should be replaced with a persistent store (Redis, Database, etc.)

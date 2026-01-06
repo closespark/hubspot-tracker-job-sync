@@ -1,10 +1,9 @@
 import express, { Request, Response, Router } from 'express';
-import { WebhookPayload, TrackerEventType } from '../types';
-import { jobSyncService } from '../services/jobSync';
-import { placementSyncService } from '../services/placementSync';
-import { idempotencyStore } from '../utils/idempotency';
-import { logger } from '../utils/logger';
-import { validateWebhook } from '../middleware/validateWebhook';
+import { WebhookPayload, TrackerEventType } from '../types/index.js';
+import { jobSyncService } from '../services/jobSync.js';
+import { idempotencyStore } from '../utils/idempotency.js';
+import { logger } from '../utils/logger.js';
+import { validateWebhook } from '../middleware/validateWebhook.js';
 
 const router: Router = express.Router();
 
@@ -18,9 +17,9 @@ router.post('/webhook', validateWebhook, async (req: Request, res: Response) => 
     if (await idempotencyStore.hasProcessed(payload.eventId)) {
       const processedEvent = await idempotencyStore.getProcessedEvent(payload.eventId);
       logger.info(`Event ${payload.eventId} already processed at ${processedEvent?.processedAt}`);
-      res.status(200).json({ 
+      res.status(200).json({
         status: 'already_processed',
-        processedAt: processedEvent?.processedAt 
+        processedAt: processedEvent?.processedAt,
       });
       return;
     }
@@ -43,33 +42,28 @@ router.post('/webhook', validateWebhook, async (req: Request, res: Response) => 
       error instanceof Error ? error.message : 'Unknown error'
     );
 
-    res.status(500).json({ 
+    res.status(500).json({
       status: 'error',
       eventId: payload.eventId,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
 
 async function processWebhookEvent(payload: WebhookPayload): Promise<void> {
   switch (payload.eventType) {
-    case TrackerEventType.OPPORTUNITY_CREATED:
-    case TrackerEventType.OPPORTUNITY_UPDATED:
-      if (!payload.data.opportunityId) {
-        throw new Error('opportunityId is required for Opportunity events');
+    case TrackerEventType.JOB_CREATED:
+    case TrackerEventType.JOB_UPDATED:
+      if (!payload.data.jobId) {
+        throw new Error('jobId is required for Job events');
       }
-      await jobSyncService.syncOpportunity(payload.data.opportunityId, payload.eventType);
+      await jobSyncService.syncJob(payload.data.jobId, payload.eventType);
       break;
 
-    case TrackerEventType.OPPORTUNITY_RESOURCE_CREATED:
-    case TrackerEventType.OPPORTUNITY_RESOURCE_UPDATED:
-      if (!payload.data.opportunityResourceId) {
-        throw new Error('opportunityResourceId is required for OpportunityResource events');
-      }
-      await placementSyncService.syncOpportunityResource(
-        payload.data.opportunityResourceId,
-        payload.eventType
-      );
+    case TrackerEventType.PLACEMENT_CREATED:
+    case TrackerEventType.PLACEMENT_UPDATED:
+      // Placements are not currently synced - focus is on Job-Deal matching
+      logger.info(`Placement event received but not processed: ${payload.eventType}`);
       break;
 
     default:
@@ -80,9 +74,9 @@ async function processWebhookEvent(payload: WebhookPayload): Promise<void> {
 
 // Health check endpoint
 router.get('/health', (_req: Request, res: Response) => {
-  res.status(200).json({ 
+  res.status(200).json({
     status: 'healthy',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 

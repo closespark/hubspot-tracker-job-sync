@@ -1,9 +1,9 @@
 import 'dotenv/config';
 import express, { Application } from 'express';
-import { config } from './config';
-import { logger } from './utils/logger';
-import webhookRoutes from './routes/webhook';
-import { errorHandler } from './middleware/errorHandler';
+import { config } from './config/index.js';
+import { logger } from './utils/logger.js';
+import webhookRoutes from './routes/webhook.js';
+import { errorHandler } from './middleware/errorHandler.js';
 
 const app: Application = express();
 

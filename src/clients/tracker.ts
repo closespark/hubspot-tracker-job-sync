@@ -1,8 +1,8 @@
 import axios, { AxiosInstance } from 'axios';
-import { config } from '../config';
-import { TrackerOpportunity, TrackerOpportunityResource } from '../types';
-import { logger } from '../utils/logger';
-import { retryWithBackoff } from '../utils/retry';
+import { config } from '../config/index.js';
+import { TrackerJob, TrackerPlacement } from '../types/index.js';
+import { logger } from '../utils/logger.js';
+import { retryWithBackoff } from '../utils/retry.js';
 
 export class TrackerClient {
   private client: AxiosInstance;
@@ -18,31 +18,31 @@ export class TrackerClient {
     });
   }
 
-  async getOpportunity(opportunityId: string): Promise<TrackerOpportunity> {
+  async getJob(jobId: string): Promise<TrackerJob> {
     return retryWithBackoff(
       async () => {
-        logger.debug(`Fetching opportunity ${opportunityId} from Tracker`);
-        const response = await this.client.get<TrackerOpportunity>(`/opportunities/${opportunityId}`);
-        logger.debug(`Successfully fetched opportunity ${opportunityId}`);
+        logger.debug(`Fetching job ${jobId} from Tracker`);
+        const response = await this.client.get<TrackerJob>(`/jobs/${jobId}`);
+        logger.debug(`Successfully fetched job ${jobId}`);
         return response.data;
       },
       config.retry.maxRetries,
       config.retry.delayMs,
-      `Tracker.getOpportunity(${opportunityId})`
+      `Tracker.getJob(${jobId})`
     );
   }
 
-  async getOpportunityResource(resourceId: string): Promise<TrackerOpportunityResource> {
+  async getPlacement(placementId: string): Promise<TrackerPlacement> {
     return retryWithBackoff(
       async () => {
-        logger.debug(`Fetching opportunity resource ${resourceId} from Tracker`);
-        const response = await this.client.get<TrackerOpportunityResource>(`/opportunity-resources/${resourceId}`);
-        logger.debug(`Successfully fetched opportunity resource ${resourceId}`);
+        logger.debug(`Fetching placement ${placementId} from Tracker`);
+        const response = await this.client.get<TrackerPlacement>(`/placements/${placementId}`);
+        logger.debug(`Successfully fetched placement ${placementId}`);
         return response.data;
       },
       config.retry.maxRetries,
       config.retry.delayMs,
-      `Tracker.getOpportunityResource(${resourceId})`
+      `Tracker.getPlacement(${placementId})`
     );
   }
 }
