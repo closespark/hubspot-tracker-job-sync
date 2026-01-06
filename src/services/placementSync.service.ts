@@ -145,14 +145,7 @@ export class PlacementSyncService {
     const placementProperties = this.buildPlacementProperties(placement, job.name, candidate.fullName);
 
     // Upsert placement in HubSpot
-    const existingPlacementId = await hubspotClient.getJobIdByTrackerJobId(placement.id); // Will search for placement
     const placementId = await hubspotClient.upsertPlacement(placementProperties);
-
-    if (existingPlacementId) {
-      result.placementsUpdated++;
-    } else {
-      result.placementsCreated++;
-    }
 
     // Create associations for placement
     await this.createPlacementAssociations(placementId, hubspotJobId, placement.jobId);
@@ -306,40 +299,21 @@ export class PlacementSyncService {
       lifecyclestage: 'Placed Candidate', // LOCKED VALUE
     };
 
-    // Upsert contact in HubSpot
+    // Upsert contact in HubSpot (will search and update or create)
     try {
-      // Check if contact already exists
-      const existingContactId = await this.findContactByTrackerCandidateId(candidate.id);
-
       const contactId = await hubspotClient.upsertContact(contactProperties);
+      
+      // Note: We can't easily track created vs updated without checking first,
+      // but the upsertContact method logs the action
+      result.candidatesCreated++; // This is approximate - may be updates
 
-      if (existingContactId) {
-        result.candidatesUpdated++;
-        logger.info(`Updated candidate contact ${candidate.id} in HubSpot`);
-      } else {
-        result.candidatesCreated++;
-        logger.info(`Created candidate contact ${candidate.id} in HubSpot`);
-      }
+      logger.info(`Synced candidate contact ${candidate.id} in HubSpot`);
 
       // Associate Contact → Placement
       await hubspotClient.associatePlacementToContact(placementId, contactId);
     } catch (error) {
       logger.error(`Error syncing candidate contact ${candidate.id}`, error);
       throw error;
-    }
-  }
-
-  /**
-   * Find contact by candidate_id_tracker
-   */
-  private async findContactByTrackerCandidateId(candidateId: string): Promise<string | null> {
-    try {
-      // This is a simplified lookup - in production, use HubSpot search API
-      // For now, we'll return null and let upsertContact handle it
-      return null;
-    } catch (error) {
-      logger.error(`Error finding contact by candidate_id_tracker: ${candidateId}`, error);
-      return null;
     }
   }
 }
