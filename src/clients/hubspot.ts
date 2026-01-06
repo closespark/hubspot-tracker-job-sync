@@ -84,6 +84,7 @@ export class HubSpotClient {
 
   /**
    * Search for deals by name and service line
+   * Filters for eligible deals: Retained Search, Closed Won, Awaiting Job Creation
    */
   async searchDealsByName(dealName: string): Promise<HubSpotDeal[]> {
     return retryWithBackoff(
@@ -105,6 +106,16 @@ export class HubSpotClient {
                     operator: FilterOperatorEnum.Eq,
                     value: config.hubspot.dealServiceLineRetainedValue,
                   },
+                  {
+                    propertyName: config.hubspot.dealStageProperty,
+                    operator: FilterOperatorEnum.Eq,
+                    value: config.hubspot.dealStageClosedWonValue,
+                  },
+                  {
+                    propertyName: config.hubspot.dealJobSyncStatusProperty,
+                    operator: FilterOperatorEnum.Eq,
+                    value: config.hubspot.dealJobSyncStatusAwaitingValue,
+                  },
                 ],
               },
             ],
@@ -112,6 +123,8 @@ export class HubSpotClient {
               config.hubspot.dealNameProperty,
               config.hubspot.dealServiceLineProperty,
               config.hubspot.dealCreatedDateProperty,
+              config.hubspot.dealStageProperty,
+              config.hubspot.dealJobSyncStatusProperty,
             ],
             limit: 100,
             after: '',

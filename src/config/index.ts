@@ -23,6 +23,7 @@ export interface Config {
     dealJobSyncStatusAwaitingValue: string;
     companyNameProperty: string;
     dealCreatedDateProperty: string;
+    contactLifecyclePlacedCandidateValue: string;
   };
   tracker: {
     apiUrl: string;
@@ -67,6 +68,7 @@ export const config: Config = {
     dealJobSyncStatusAwaitingValue: process.env.HUBSPOT_DEAL_JOB_SYNC_STATUS_AWAITING_VALUE || 'Awaiting Job Creation',
     companyNameProperty: process.env.HUBSPOT_COMPANY_NAME_PROPERTY || 'name',
     dealCreatedDateProperty: process.env.HUBSPOT_DEAL_CREATED_DATE_PROPERTY || 'createdate',
+    contactLifecyclePlacedCandidateValue: process.env.HUBSPOT_CONTACT_LIFECYCLE_PLACED_CANDIDATE_VALUE || 'placed_candidate',
   },
   tracker: {
     apiUrl: process.env.TRACKER_API_URL || 'https://api.trackersoftware.com/v1',

@@ -1,6 +1,7 @@
 import { trackerClient } from '../clients/tracker.js';
 import { hubspotClient } from '../clients/hubspot.js';
 import { logger } from '../utils/logger.js';
+import { config } from '../config/index.js';
 import {
   TrackerPlacement,
   TrackerCandidate,
@@ -277,13 +278,14 @@ export class PlacementSyncService {
     }
 
     // Build contact properties with LOCKED lifecycle stage
+    // NOTE: Using internal value (e.g., "placed_candidate") not display label
     const contactProperties: HubSpotContactProperties = {
       candidate_id_tracker: candidate.id,
       firstname: candidate.firstName || undefined,
       lastname: candidate.lastName || undefined,
       email: candidate.email || undefined,
       phone: candidate.phone || undefined,
-      lifecyclestage: 'Placed Candidate', // LOCKED VALUE - not "Contact Type"
+      lifecyclestage: config.hubspot.contactLifecyclePlacedCandidateValue, // Internal value, not label
     };
 
     // Upsert contact in HubSpot (will search and update or create)
