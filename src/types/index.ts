@@ -71,7 +71,7 @@ export interface HubSpotDeal {
   id: string;
   properties: {
     dealname: string;
-    service_line?: string;
+    service?: string;
     createdate?: string;
     [key: string]: any;
   };

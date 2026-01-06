@@ -29,7 +29,7 @@ export function normalizeName(name: string): string {
  * 
  * Algorithm:
  * 1. Normalize job.name
- * 2. Query HubSpot Deals where dealname matches job.name (exact) and service_line == "Retained Search"
+ * 2. Query HubSpot Deals where dealname matches job.name (exact) and service == "Retained Search"
  * 3. If exactly 1 Deal → MATCH
  * 4. If 0 or >1 → SKIP, log only
  */
@@ -44,7 +44,7 @@ export async function matchJobToDeal(
   // Filter deals by exact name match (normalized) and service line
   const matches = deals.filter(deal => {
     const dealName = deal.properties.dealname;
-    const serviceLine = deal.properties.service_line;
+    const serviceLine = deal.properties.service;
     
     // Must be exact name match (normalized)
     const normalizedDealName = normalizeName(dealName);

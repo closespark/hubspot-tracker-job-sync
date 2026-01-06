@@ -60,7 +60,7 @@ export const config: Config = {
     placementObjectType: process.env.HUBSPOT_PLACEMENT_OBJECT_TYPE || 'tracker_placements',
     placementIdProperty: process.env.HUBSPOT_PLACEMENT_ID_PROPERTY || 'placement_id_tracker',
     dealNameProperty: process.env.HUBSPOT_DEAL_NAME_PROPERTY || 'dealname',
-    dealServiceLineProperty: process.env.HUBSPOT_DEAL_SERVICE_LINE_PROPERTY || 'service_line',
+    dealServiceLineProperty: process.env.HUBSPOT_DEAL_SERVICE_LINE_PROPERTY || 'service',
     dealServiceLineRetainedValue: process.env.HUBSPOT_DEAL_SERVICE_LINE_RETAINED_VALUE || 'Retained Search',
     dealStageProperty: process.env.HUBSPOT_DEAL_STAGE_PROPERTY || 'dealstage',
     dealStageClosedWonValue: process.env.HUBSPOT_DEAL_STAGE_CLOSED_WON_VALUE || 'closedwon',
