@@ -1,4 +1,5 @@
 import { Client } from '@hubspot/api-client';
+import { FilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/objects/models/Filter';
 import { config } from '../config';
 import { HubSpotJobProperties, HubSpotPlacementProperties } from '../types';
 import { logger } from '../utils/logger';
@@ -26,13 +27,16 @@ export class HubSpotClient {
                 filters: [
                   {
                     propertyName: 'tracker_job_id',
-                    operator: 'EQ',
+                    operator: FilterOperatorEnum.Eq,
                     value: properties.tracker_job_id,
                   },
                 ],
               },
             ],
             limit: 1,
+            after: '',
+            sorts: [],
+            properties: [],
           });
 
           if (searchResponse.results && searchResponse.results.length > 0) {
@@ -54,7 +58,7 @@ export class HubSpotClient {
             
             const createResponse = await this.client.crm.objects.basicApi.create(
               this.JOB_OBJECT_TYPE,
-              { properties }
+              { properties, associations: [] }
             );
             
             logger.info(`Created job ${properties.tracker_job_id} in HubSpot with ID: ${createResponse.id}`);
@@ -84,13 +88,16 @@ export class HubSpotClient {
                 filters: [
                   {
                     propertyName: 'tracker_placement_id',
-                    operator: 'EQ',
+                    operator: FilterOperatorEnum.Eq,
                     value: properties.tracker_placement_id,
                   },
                 ],
               },
             ],
             limit: 1,
+            after: '',
+            sorts: [],
+            properties: [],
           });
 
           if (searchResponse.results && searchResponse.results.length > 0) {
@@ -112,7 +119,7 @@ export class HubSpotClient {
             
             const createResponse = await this.client.crm.objects.basicApi.create(
               this.PLACEMENT_OBJECT_TYPE,
-              { properties }
+              { properties, associations: [] }
             );
             
             logger.info(`Created placement ${properties.tracker_placement_id} in HubSpot with ID: ${createResponse.id}`);
@@ -144,7 +151,7 @@ export class HubSpotClient {
           await this.client.crm.associations.batchApi.create(fromObjectType, toObjectType, {
             inputs: [
               {
-                from: { id: fromObjectId },
+                _from: { id: fromObjectId },
                 to: { id: toObjectId },
                 type: associationTypeId.toString(),
               },

@@ -1,5 +1,6 @@
 import { trackerClient } from '../clients/tracker';
 import { hubspotClient } from '../clients/hubspot';
+import { FilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/objects/models/Filter';
 import { TrackerEventType, HubSpotPlacementProperties } from '../types';
 import { logger } from '../utils/logger';
 
@@ -51,13 +52,16 @@ export class PlacementSyncService {
             filters: [
               {
                 propertyName: 'tracker_job_id',
-                operator: 'EQ',
+                operator: FilterOperatorEnum.Eq,
                 value: opportunity.id,
               },
             ],
           },
         ],
         limit: 1,
+        after: '',
+        sorts: [],
+        properties: [],
       });
 
       if (searchResponse.results && searchResponse.results.length > 0) {

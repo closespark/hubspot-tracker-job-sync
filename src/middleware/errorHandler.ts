@@ -3,9 +3,9 @@ import { logger } from '../utils/logger';
 
 export function errorHandler(
   error: Error,
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): void {
   logger.error('Unhandled error in request', error);
 
