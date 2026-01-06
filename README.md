@@ -39,7 +39,7 @@ Polling-based integration that syncs TrackerRMS Jobs, Placements, and Placed Can
                            ↓
 ┌─────────────────────────────────────────────────────────────┐
 │  1. Poll HubSpot Deals                                      │
-│     Filter: service_line="Retained Search"                  │
+│     Filter: service="Retained Search"                        │
 │             job_sync_status="Awaiting Job Creation"         │
 │             dealstage="closedwon"                           │
 │             associated company EXISTS                       │
@@ -101,7 +101,7 @@ Polling-based integration that syncs TrackerRMS Jobs, Placements, and Placed Can
   - **Job** custom object (`tracker_jobs`)
   - **Placement** custom object (`tracker_placements`)
 - HubSpot Deal Properties (must exist):
-  - `service_line` (dropdown with "Retained Search" option)
+  - `service` (dropdown with "Retained Search" option)
   - `job_sync_status` (text with "Awaiting Job Creation" value)
   - `dealstage` (pipeline stage with "closedwon" internal value)
 - HubSpot Contact Lifecycle Stage:
@@ -146,7 +146,7 @@ HUBSPOT_JOB_NAME_PROPERTY=job_name
 HUBSPOT_JOB_STATUS_PROPERTY=job_status
 
 # HubSpot Deal Properties (for eligibility filtering)
-HUBSPOT_DEAL_SERVICE_LINE_PROPERTY=service_line
+HUBSPOT_DEAL_SERVICE_LINE_PROPERTY=service
 HUBSPOT_DEAL_SERVICE_LINE_RETAINED_VALUE=Retained Search
 HUBSPOT_DEAL_STAGE_PROPERTY=dealstage
 HUBSPOT_DEAL_STAGE_CLOSED_WON_VALUE=closedwon
@@ -304,7 +304,7 @@ Before using this service, you need to create custom objects in HubSpot:
 
 These are standard or custom Deal properties your HubSpot portal must have:
 
-- `service_line` - Dropdown with "Retained Search" option
+- `service` - Dropdown with "Retained Search" option
 - `job_sync_status` - Text field with "Awaiting Job Creation" value
 - `dealstage` - Pipeline stage (internal value: `closedwon`)
 
