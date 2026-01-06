@@ -11,7 +11,7 @@ import {
   PlacementOutcomeType,
 } from '../types/index.js';
 
-// Allowed placement statuses that trigger sync
+// Allowed placement statuses that trigger sync (all 9 valid statuses)
 const ALLOWED_PLACEMENT_STATUSES: PlacementStatus[] = [
   'Placed Perm',
   'On Assignment',
@@ -24,22 +24,21 @@ const ALLOWED_PLACEMENT_STATUSES: PlacementStatus[] = [
   'Ended Early',
 ];
 
-// Statuses that allow candidate contact creation (HARD RULE)
-const CANDIDATE_ELIGIBLE_STATUSES: PlacementStatus[] = [
+// HARD RULE: Statuses that allow candidate contact creation
+// ONLY these three - no exceptions
+const CANDIDATE_ELIGIBLE_STATUSES = new Set<PlacementStatus>([
   'Placed Perm',
   'On Assignment',
   'Converted To Perm',
-];
+]);
 
-// Statuses that MUST BLOCK candidate sync (HARD RULE)
-const CANDIDATE_BLOCKED_STATUSES: PlacementStatus[] = [
-  'Withdrawn',
-  'Declined',
-  'Cancelled',
-  'Backed Out',
-  'Ended',
-  'Ended Early',
-];
+/**
+ * Check if candidate contact creation is eligible for this placement status
+ * HARD RULE: Only "Placed Perm", "On Assignment", "Converted To Perm"
+ */
+const shouldSyncPlacedCandidateContact = (placementStatus?: string | null): boolean => {
+  return !!placementStatus && CANDIDATE_ELIGIBLE_STATUSES.has(placementStatus as PlacementStatus);
+};
 
 export class PlacementSyncService {
   /**
@@ -130,7 +129,14 @@ export class PlacementSyncService {
       placement.candidate || trackerClient.getCandidate(placement.candidateId),
     ]);
 
-    // Check if the Job exists in HubSpot (placements NEVER exist without jobs)
+    // DEFENSIVE GUARD: Placement must have a valid job ID
+    if (!placement.jobId) {
+      logger.error(`Invalid placement ${placement.id}: Missing job ID`);
+      result.placementsSkipped++;
+      return;
+    }
+
+    // Check if the Job exists in HubSpot (placements ALWAYS belong to jobs)
     const hubspotJobId = await hubspotClient.getJobIdByTrackerJobId(placement.jobId);
 
     if (!hubspotJobId) {
@@ -151,38 +157,18 @@ export class PlacementSyncService {
     await this.createPlacementAssociations(placementId, hubspotJobId, placement.jobId);
 
     // CANDIDATE CONTACT CREATION - STRICT ELIGIBILITY CHECK
-    const isCandidateEligible = this.isCandidateEligible(placement.status as PlacementStatus);
+    const isCandidateEligible = shouldSyncPlacedCandidateContact(placement.status);
 
     if (isCandidateEligible) {
       // Only create/update candidate contact if status is eligible
       await this.syncCandidateContact(placement, candidate, placementId, result);
     } else {
       logger.debug(
-        `Skipping candidate contact creation for placement ${placement.id}: Status "${placement.status}" not eligible`
+        `Skipping candidate contact creation for placement ${placement.id}: Status "${placement.status}" not eligible (must be: Placed Perm, On Assignment, or Converted To Perm)`
       );
     }
 
     logger.info(`Successfully synced placement ${placement.id} to HubSpot`);
-  }
-
-  /**
-   * Check if candidate contact creation is eligible for this placement status
-   * HARD RULE: Only "Placed Perm", "On Assignment", "Converted To Perm"
-   */
-  private isCandidateEligible(status: PlacementStatus): boolean {
-    // Explicit positive check
-    if (CANDIDATE_ELIGIBLE_STATUSES.includes(status)) {
-      return true;
-    }
-
-    // Explicit negative guard (MUST BLOCK)
-    if (CANDIDATE_BLOCKED_STATUSES.includes(status)) {
-      logger.warn(`Candidate sync explicitly blocked for status: ${status}`);
-      return false;
-    }
-
-    // Default: not eligible
-    return false;
   }
 
   /**
@@ -274,6 +260,7 @@ export class PlacementSyncService {
 
   /**
    * Sync candidate contact (ONLY when eligible)
+   * HARD RULE: Can only be called for "Placed Perm", "On Assignment", "Converted To Perm"
    */
   private async syncCandidateContact(
     placement: TrackerPlacement,
@@ -282,21 +269,21 @@ export class PlacementSyncService {
     result: PlacementSyncResult
   ): Promise<void> {
     // Double-check eligibility (defensive programming)
-    if (!this.isCandidateEligible(placement.status as PlacementStatus)) {
+    if (!shouldSyncPlacedCandidateContact(placement.status)) {
       logger.error(
         `CRITICAL: Attempted to sync candidate for ineligible status "${placement.status}"`
       );
       return;
     }
 
-    // Build contact properties
+    // Build contact properties with LOCKED lifecycle stage
     const contactProperties: HubSpotContactProperties = {
       candidate_id_tracker: candidate.id,
       firstname: candidate.firstName || undefined,
       lastname: candidate.lastName || undefined,
       email: candidate.email || undefined,
       phone: candidate.phone || undefined,
-      lifecyclestage: 'Placed Candidate', // LOCKED VALUE
+      lifecyclestage: 'Placed Candidate', // LOCKED VALUE - not "Contact Type"
     };
 
     // Upsert contact in HubSpot (will search and update or create)
@@ -307,7 +294,7 @@ export class PlacementSyncService {
       // but the upsertContact method logs the action
       result.candidatesCreated++; // This is approximate - may be updates
 
-      logger.info(`Synced candidate contact ${candidate.id} in HubSpot`);
+      logger.info(`Synced placed candidate contact ${candidate.id} in HubSpot`);
 
       // Associate Contact → Placement
       await hubspotClient.associatePlacementToContact(placementId, contactId);
