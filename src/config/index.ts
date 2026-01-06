@@ -8,6 +8,10 @@ export interface Config {
     jobNameProperty: string;
     jobStatusProperty: string;
     jobCreatedDateProperty: string;
+    jobTypeProperty: string;
+    engagementDirectorProperty: string;
+    jobValueProperty: string;
+    jobOwnerProperty: string;
     dealNameProperty: string;
     dealServiceLineProperty: string;
     dealServiceLineRetainedValue: string;
@@ -18,8 +22,9 @@ export interface Config {
     apiUrl: string;
     apiKey: string;
   };
-  webhook: {
-    secret?: string;
+  polling: {
+    intervalHours: number;
+    enabled: boolean;
   };
   retry: {
     maxRetries: number;
@@ -41,6 +46,10 @@ export const config: Config = {
     jobNameProperty: process.env.HUBSPOT_JOB_NAME_PROPERTY || 'job_name',
     jobStatusProperty: process.env.HUBSPOT_JOB_STATUS_PROPERTY || 'job_status',
     jobCreatedDateProperty: process.env.HUBSPOT_JOB_CREATED_DATE_PROPERTY || 'job_created_date_tracker',
+    jobTypeProperty: process.env.HUBSPOT_JOB_TYPE_PROPERTY || 'job_type',
+    engagementDirectorProperty: process.env.HUBSPOT_ENGAGEMENT_DIRECTOR_PROPERTY || 'engagement_director',
+    jobValueProperty: process.env.HUBSPOT_JOB_VALUE_PROPERTY || 'job_value',
+    jobOwnerProperty: process.env.HUBSPOT_JOB_OWNER_PROPERTY || 'job_owner',
     dealNameProperty: process.env.HUBSPOT_DEAL_NAME_PROPERTY || 'dealname',
     dealServiceLineProperty: process.env.HUBSPOT_DEAL_SERVICE_LINE_PROPERTY || 'service_line',
     dealServiceLineRetainedValue: process.env.HUBSPOT_DEAL_SERVICE_LINE_RETAINED_VALUE || 'Retained Search',
@@ -51,8 +60,9 @@ export const config: Config = {
     apiUrl: process.env.TRACKER_API_URL || 'https://api.trackersoftware.com/v1',
     apiKey: process.env.TRACKER_API_KEY || '',
   },
-  webhook: {
-    secret: process.env.WEBHOOK_SECRET,
+  polling: {
+    intervalHours: parseInt(process.env.POLLING_INTERVAL_HOURS || '24', 10),
+    enabled: process.env.POLLING_ENABLED !== 'false',
   },
   retry: {
     maxRetries: parseInt(process.env.MAX_RETRIES || '3', 10),

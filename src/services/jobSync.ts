@@ -1,21 +1,71 @@
 import { trackerClient } from '../clients/tracker.js';
 import { hubspotClient } from '../clients/hubspot.js';
-import { TrackerEventType, HubSpotJobProperties } from '../types/index.js';
+import { HubSpotJobProperties, SyncResult } from '../types/index.js';
 import { matchJobToDeal } from './match.service.js';
 import { logger } from '../utils/logger.js';
 
 export class JobSyncService {
   /**
-   * Sync a Tracker job to HubSpot and match it to a Deal
+   * Sync all jobs from Tracker to HubSpot (polling-based)
    */
-  async syncJob(jobId: string, eventType: TrackerEventType): Promise<void> {
-    logger.info(`Syncing job ${jobId} for event ${eventType}`);
+  async syncAllJobs(): Promise<SyncResult> {
+    logger.info('Starting full job sync from Tracker to HubSpot');
+
+    const result: SyncResult = {
+      jobsProcessed: 0,
+      jobsCreated: 0,
+      jobsUpdated: 0,
+      jobsMatched: 0,
+      errors: [],
+    };
 
     try {
-      // Step 1: Fetch full job record from Tracker
-      const job = await trackerClient.getJob(jobId);
+      // Fetch all jobs from Tracker with pagination
+      let offset = 0;
+      const limit = 100;
+      let hasMore = true;
 
-      // Step 2: Map Tracker job to HubSpot Job properties
+      while (hasMore) {
+        const jobs = await trackerClient.listJobs(limit, offset);
+
+        if (jobs.length === 0) {
+          hasMore = false;
+          break;
+        }
+
+        logger.info(`Processing batch of ${jobs.length} jobs (offset: ${offset})`);
+
+        for (const job of jobs) {
+          try {
+            await this.syncJob(job);
+            result.jobsProcessed++;
+          } catch (error) {
+            const errorMsg = `Failed to sync job ${job.id}: ${error instanceof Error ? error.message : 'Unknown error'}`;
+            logger.error(errorMsg, error);
+            result.errors.push(errorMsg);
+          }
+        }
+
+        offset += limit;
+        hasMore = jobs.length === limit; // If we got a full batch, there might be more
+      }
+
+      logger.info(`Job sync completed: ${result.jobsProcessed} processed, ${result.errors.length} errors`);
+      return result;
+    } catch (error) {
+      logger.error('Fatal error during job sync', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Sync a single Tracker job to HubSpot and match it to a Deal
+   */
+  private async syncJob(job: any): Promise<void> {
+    logger.debug(`Syncing job ${job.id} (${job.name})`);
+
+    try {
+      // Map Tracker job to HubSpot Job properties
       const jobProperties: HubSpotJobProperties = {
         tracker_job_id: job.id,
         job_name: job.name,
@@ -23,15 +73,29 @@ export class JobSyncService {
         job_created_date_tracker: job.createdDate,
       };
 
-      // Step 3: Upsert Job in HubSpot
+      // Add optional fields if present
+      if (job.jobType) {
+        jobProperties.job_type = job.jobType;
+      }
+      if (job.engagementDirector) {
+        jobProperties.engagement_director = job.engagementDirector;
+      }
+      if (job.jobValue !== undefined) {
+        jobProperties.job_value = String(job.jobValue);
+      }
+      if (job.jobOwner) {
+        jobProperties.job_owner = job.jobOwner;
+      }
+
+      // Upsert Job in HubSpot
       const hubspotJobId = await hubspotClient.upsertJob(jobProperties);
 
-      // Step 4: Match Job to Deal using canonical algorithm
+      // Match Job to Deal and create associations
       await this.matchAndAssociateJobToDeal(hubspotJobId, job);
 
-      logger.info(`Successfully synced job ${jobId} to HubSpot job ${hubspotJobId}`);
+      logger.info(`Successfully synced job ${job.id} to HubSpot job ${hubspotJobId}`);
     } catch (error) {
-      logger.error(`Failed to sync job ${jobId}`, error);
+      logger.error(`Failed to sync job ${job.id}`, error);
       throw error;
     }
   }

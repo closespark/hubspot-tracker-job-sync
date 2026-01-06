@@ -1,23 +1,3 @@
-// Tracker Webhook Event Types
-export enum TrackerEventType {
-  JOB_CREATED = 'Job.Created',
-  JOB_UPDATED = 'Job.Updated',
-  PLACEMENT_CREATED = 'Placement.Created',
-  PLACEMENT_UPDATED = 'Placement.Updated',
-}
-
-// Webhook Payload
-export interface WebhookPayload {
-  eventType: TrackerEventType;
-  eventId: string;
-  timestamp: string;
-  data: {
-    jobId?: string;
-    placementId?: string;
-    [key: string]: any;
-  };
-}
-
 // Tracker API Models
 export interface TrackerJob {
   id: string;
@@ -26,6 +6,10 @@ export interface TrackerJob {
   createdDate: string;
   updatedDate: string;
   companyName?: string;
+  jobType?: string;
+  engagementDirector?: string;
+  jobValue?: number;
+  jobOwner?: string;
   [key: string]: any;
 }
 
@@ -35,7 +19,6 @@ export interface TrackerPlacement {
   candidateName?: string;
   status: string;
   startDate?: string;
-  endDate?: string;
   createdDate: string;
   updatedDate: string;
   [key: string]: any;
@@ -47,6 +30,10 @@ export interface HubSpotJobProperties {
   job_name: string;
   job_status: string;
   job_created_date_tracker: string;
+  job_type?: string;
+  engagement_director?: string;
+  job_value?: string;
+  job_owner?: string;
   [key: string]: any;
 }
 
@@ -84,10 +71,11 @@ export interface MatchResult {
   }>;
 }
 
-// Idempotency
-export interface ProcessedEvent {
-  eventId: string;
-  processedAt: Date;
-  status: 'success' | 'failed';
-  error?: string;
+// Sync Result
+export interface SyncResult {
+  jobsProcessed: number;
+  jobsCreated: number;
+  jobsUpdated: number;
+  jobsMatched: number;
+  errors: string[];
 }
