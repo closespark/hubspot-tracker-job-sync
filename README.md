@@ -345,14 +345,16 @@ normalize(hubspotDeal.dealname) === normalize(trackerJob.name)
 
 ### Example
 
+Deal Names are typically a combination of company name and job title (e.g., "Acme - Road Runner Medic").
+
 ```typescript
 // These MATCH:
-HubSpot Deal Name: "Chief Financial Officer"
-Tracker Job Name:  "chief financial officer"
+HubSpot Deal Name: "Acme Corp - Chief Financial Officer"
+Tracker Job Name:  "acme corp - chief financial officer"
 
 // These DO NOT MATCH:
-HubSpot Deal Name: "CFO"
-Tracker Job Name:  "Chief Financial Officer"
+HubSpot Deal Name: "Acme Corp - CFO"
+Tracker Job Name:  "Acme Corp - Chief Financial Officer"
 ```
 
 > **Why exact matching?** Prevents false positives and maintains data integrity. If a Job doesn't match, manual review is required.
