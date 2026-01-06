@@ -14,8 +14,8 @@ Before deploying, ensure you have:
    - `crm.schemas.custom.read`
 
 2. **HubSpot Custom Objects** created:
-   - `tracker_jobs` (fully qualified name: `p{portal_id}_tracker_jobs`)
-   - `tracker_placements` (fully qualified name: `p{portal_id}_tracker_placements`)
+   - `jobs` (fully qualified name: `p{portal_id}_jobs`)
+   - `placements` (fully qualified name: `p{portal_id}_placements`)
 
 3. **TrackerRMS API credentials**
 
@@ -27,11 +27,11 @@ Before deploying, ensure you have:
 2. Go to Settings → Data Management → Objects
 3. Click "Create custom object"
 
-### tracker_jobs Custom Object
+### jobs Custom Object
 
-**Object Name:** Tracker Jobs  
-**Object Label (singular):** Tracker Job  
-**Object Label (plural):** Tracker Jobs
+**Object Name:** Jobs  
+**Object Label (singular):** Job  
+**Object Label (plural):** Jobs
 
 **Properties:**
 - `tracker_job_id` (Single-line text, unique identifier)
@@ -41,11 +41,11 @@ Before deploying, ensure you have:
 - `created_at` (Date picker)
 - `updated_at` (Date picker)
 
-### tracker_placements Custom Object
+### placements Custom Object
 
-**Object Name:** Tracker Placements  
-**Object Label (singular):** Tracker Placement  
-**Object Label (plural):** Tracker Placements
+**Object Name:** Placements  
+**Object Label (singular):** Placement  
+**Object Label (plural):** Placements
 
 **Properties:**
 - `tracker_placement_id` (Single-line text, unique identifier)

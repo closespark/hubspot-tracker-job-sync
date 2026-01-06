@@ -98,8 +98,8 @@ Polling-based integration that syncs TrackerRMS Jobs, Placements, and Placed Can
   - `crm.schemas.custom.read`
 - TrackerRMS API credentials (read-only access)
 - HubSpot Custom Objects pre-created:
-  - **Job** custom object (`tracker_jobs`)
-  - **Placement** custom object (`tracker_placements`)
+  - **Job** custom object (`jobs`)
+  - **Placement** custom object (`placements`)
 - HubSpot Deal Properties (must exist):
   - `service` (dropdown with "Retained Search" option)
   - `job_sync_status` (text with "Awaiting Job Creation" value)
@@ -140,7 +140,7 @@ NODE_ENV=production
 HUBSPOT_ACCESS_TOKEN=your_hubspot_private_app_token_here
 
 # HubSpot Job Custom Object
-HUBSPOT_JOB_OBJECT_TYPE=tracker_jobs
+HUBSPOT_JOB_OBJECT_TYPE=jobs
 HUBSPOT_JOB_ID_PROPERTY=tracker_job_id
 HUBSPOT_JOB_NAME_PROPERTY=job_name
 HUBSPOT_JOB_STATUS_PROPERTY=job_status
@@ -264,7 +264,7 @@ On any Node.js hosting platform:
 
 Before using this service, you need to create custom objects in HubSpot:
 
-### Job Custom Object (`tracker_jobs`)
+### Job Custom Object (`jobs`)
 
 **Required Properties:**
 - `tracker_job_id` (Single-line text, **unique identifier**)
@@ -279,7 +279,7 @@ Before using this service, you need to create custom objects in HubSpot:
 **Associations:**
 - Can be associated to: Deals, Companies
 
-### Placement Custom Object (`tracker_placements`)
+### Placement Custom Object (`placements`)
 
 **Required Properties:**
 - `placement_id_tracker` (Single-line text, **unique identifier**)

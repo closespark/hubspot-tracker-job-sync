@@ -48,7 +48,7 @@ export const config: Config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   hubspot: {
     accessToken: process.env.HUBSPOT_ACCESS_TOKEN || '',
-    jobObjectType: process.env.HUBSPOT_JOB_OBJECT_TYPE || 'tracker_jobs',
+    jobObjectType: process.env.HUBSPOT_JOB_OBJECT_TYPE || 'jobs',
     jobIdProperty: process.env.HUBSPOT_JOB_ID_PROPERTY || 'tracker_job_id',
     jobNameProperty: process.env.HUBSPOT_JOB_NAME_PROPERTY || 'job_name',
     jobStatusProperty: process.env.HUBSPOT_JOB_STATUS_PROPERTY || 'job_status',
@@ -57,7 +57,7 @@ export const config: Config = {
     engagementDirectorProperty: process.env.HUBSPOT_ENGAGEMENT_DIRECTOR_PROPERTY || 'engagement_director',
     jobValueProperty: process.env.HUBSPOT_JOB_VALUE_PROPERTY || 'job_value',
     jobOwnerProperty: process.env.HUBSPOT_JOB_OWNER_PROPERTY || 'job_owner',
-    placementObjectType: process.env.HUBSPOT_PLACEMENT_OBJECT_TYPE || 'tracker_placements',
+    placementObjectType: process.env.HUBSPOT_PLACEMENT_OBJECT_TYPE || 'placements',
     placementIdProperty: process.env.HUBSPOT_PLACEMENT_ID_PROPERTY || 'placement_id_tracker',
     dealNameProperty: process.env.HUBSPOT_DEAL_NAME_PROPERTY || 'dealname',
     dealServiceLineProperty: process.env.HUBSPOT_DEAL_SERVICE_LINE_PROPERTY || 'service',
